@@ -2,3 +2,4 @@ scikit-learn==1.2.2
 pandas==1.5.3
 nltk==3.8.1
 spacy==3.5.2
+flask==2.3.2
