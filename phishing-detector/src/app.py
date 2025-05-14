@@ -31,3 +31,9 @@ def predict():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+# Guardar el modelo entrenado
+joblib.dump(model, "C:/Users/alexs/Documents/GitHub/Phising-Ia/phishing-detector/src/detector/phishing_model.pkl")
+
+# Guardar el vectorizador
+joblib.dump(vectorizer, "C:/Users/alexs/Documents/GitHub/Phising-Ia/phishing-detector/src/detector/vectorizer.pkl")
