@@ -14,10 +14,9 @@ class PhishingDetector:
         self.scaler = None
 
     def train_model(self, dataset=None):
-        # Define the data path
-        data_path = "C:/Users/alexs/Documents/GitHub/Phising-Ia/phishing-detector/data/raw/"
+        # Define the data path (adjust to your raw folder)
+        data_path = "D:/DAM/IAClase/Phising-Ia/phishing-detector/data/raw/"
         dataframes = []
-
         # Load dataset(s)
         if (dataset):
             if isinstance(dataset, str):

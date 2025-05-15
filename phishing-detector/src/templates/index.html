@@ -10,12 +10,21 @@
     <div class="container">
         <h1>Detector de Phishing</h1>
         <form action="/predict" method="post">
-            <label for="text">Ingresa el correo o URL:</label><br>
+            <label for="text">Ingresa el asunto del correo o la URL:</label><br>
             <textarea name="text" id="text" placeholder="Escribe aquí..."></textarea><br><br>
             <button type="submit">Clasificar</button>
         </form>
         {% if prediction %}
-            <h2>Resultado: <span class="result">{{ prediction }}</span></h2>
+            <h2>Resultado: 
+                <span class="result">
+                    {{ prediction }}
+                    {% if prediction == "Phishing" %}
+                        <span style="color: #ff9800; font-size: 1.2em;">&#9888;</span>
+                    {% elif prediction == "Legítimo" %}
+                        <span style="color: #4CAF50; font-size: 1.2em;">&#10004;</span>
+                    {% endif %}
+                </span>
+            </h2>
         {% endif %}
     </div>
 </body>
