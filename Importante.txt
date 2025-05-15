@@ -3,7 +3,6 @@ hacer el pip install con el cmd no con Python
 
 
 
-¡Exactamente!  
 Cuando entrenas la IA, **está aprendiendo a partir de los datos del CSV** (los ejemplos históricos).  
 Pero una vez entrenado el modelo, puedes usarlo para **predecir si un nuevo email es phishing o no**.
 

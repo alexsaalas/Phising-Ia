@@ -2,10 +2,11 @@ import os
 import glob
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
 from sklearn.preprocessing import StandardScaler
 import joblib
+from imblearn.over_sampling import SMOTE
 
 class PhishingDetector:
     def __init__(self):
@@ -13,12 +14,12 @@ class PhishingDetector:
         self.scaler = None
 
     def train_model(self, dataset=None):
-        # Define the data path (adjust to your raw folder)
+        # Define the data path
         data_path = "C:/Users/alexs/Documents/GitHub/Phising-Ia/phishing-detector/data/raw/"
         dataframes = []
 
         # Load dataset(s)
-        if dataset:
+        if (dataset):
             if isinstance(dataset, str):
                 files = [os.path.join(data_path, dataset)]
             elif isinstance(dataset, list):
@@ -61,11 +62,15 @@ class PhishingDetector:
         self.scaler = StandardScaler()
         X_scaled = self.scaler.fit_transform(X)
 
-        # Split data into training and test sets
-        X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+        # Apply SMOTE before splitting into train/test
+        smote = SMOTE(random_state=42)
+        X_resampled, y_resampled = smote.fit_resample(X_scaled, y)
 
-        # Train the model (SVM)
-        self.model = SVC(kernel='linear', random_state=42, class_weight='balanced')
+        # Now split the balanced data
+        X_train, X_test, y_train, y_test = train_test_split(X_resampled, y_resampled, test_size=0.2, random_state=42)
+
+        # Train the model (Logistic Regression)
+        self.model = LogisticRegression(class_weight='balanced', max_iter=1000, random_state=42)
         self.model.fit(X_train, y_train)
 
         # Evaluate the model
@@ -95,7 +100,7 @@ class PhishingDetector:
         # Scale input data
         input_scaled = self.scaler.transform(input_data)
         prediction = self.model.predict(input_scaled)
-        return prediction[0]
+        return "Phishing" if prediction[0] == 1 else "No Phishing"
 
 # Example usage
 if __name__ == "__main__":
@@ -114,4 +119,4 @@ if __name__ == "__main__":
         'num_urgent_keywords': 1
     }
     prediction = detector.predict(sample_input)
-    print(f"Predicción para el ejemplo: {'Phishing' if prediction == 1 else 'No Phishing'}")
+    print(f"Predicción para el ejemplo: {prediction}")
