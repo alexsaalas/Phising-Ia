@@ -1,0 +1,2 @@
+El entorno se llama byPhishing310
+hacer el pip install con el cmd no con Python
