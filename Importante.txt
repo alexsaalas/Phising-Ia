@@ -1,2 +1,24 @@
 El entorno se llama byPhishing310
 hacer el pip install con el cmd no con Python
+
+
+
+¡Exactamente!  
+Cuando entrenas la IA, **está aprendiendo a partir de los datos del CSV** (los ejemplos históricos).  
+Pero una vez entrenado el modelo, puedes usarlo para **predecir si un nuevo email es phishing o no**.
+
+### ¿Cómo funcionaría con Flask?
+
+1. **Entrenas el modelo** con los datos del CSV (como ya haces).
+2. **Guardas el modelo entrenado** (esto ya lo hace tu script con `joblib.dump`).
+3. **Levantas un servidor Flask** que reciba los datos de un email (por ejemplo, los mismos features que usaste para entrenar).
+4. **El usuario envía un email** (o sus características) a Flask.
+5. **Flask usa el modelo entrenado** para predecir si es phishing o no y devuelve la respuesta.
+
+---
+
+**En resumen:**  
+- El CSV solo se usa para entrenar.
+- El usuario final solo necesita enviar los datos del email a tu API Flask para obtener la predicción.
+
+¿Quieres un ejemplo de cómo hacerlo con Flask?
