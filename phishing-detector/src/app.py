@@ -1,11 +1,15 @@
+import os
+from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from flask import Flask, request, render_template
 
+load_dotenv()  # Carga las variables del .env
+
 app = Flask(__name__)
 
-# Configura tu API KEY de Gemini
-GEMINI_API_KEY = "AIzaSyDYVXUL6WcREkDzU-lW44Kz-AtXS3CPoho"
+# Obtén la API KEY de Gemini desde el .env
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 client = genai.Client(
     api_key=GEMINI_API_KEY,
     http_options=types.HttpOptions(api_version='v1')
