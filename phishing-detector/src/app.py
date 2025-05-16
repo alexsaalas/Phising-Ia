@@ -1,34 +1,33 @@
-# src/app.py
+from google import genai
+from google.genai import types
 from flask import Flask, request, render_template
-import joblib
-import pandas as pd
-from detector.utils import extract_features
 
 app = Flask(__name__)
 
-# Cargar el modelo y el escalador
-model = joblib.load("C:/Users/alexs/Documents/GitHub/Phising-Ia/phishing-detector/src/detector/phishing_model.pkl")
-scaler = joblib.load("C:/Users/alexs/Documents/GitHub/Phising-Ia/phishing-detector/src/detector/scaler.pkl")
+# Configura tu API KEY de Gemini
+GEMINI_API_KEY = "AIzaSyDYVXUL6WcREkDzU-lW44Kz-AtXS3CPoho"
+client = genai.Client(
+    api_key=GEMINI_API_KEY,
+    http_options=types.HttpOptions(api_version='v1')
+)
 
 @app.route('/', methods=['GET'])
 def home():
-    return(render_template('index.html', prediction=None))
+    return render_template('index.html', prediction=None)
 
 @app.route('/predict', methods=['POST'])
 def predict():
     input_text = request.form['text']
-    features = extract_features(input_text)
-    print("Características extraídas:", features)  # <-- Añade esto para depurar
-    # Convertir a DataFrame
-    feature_columns = ['num_words', 'num_unique_words', 'num_stopwords', 'num_links', 
-                       'num_unique_domains', 'num_email_addresses', 'num_spelling_errors', 
-                       'num_urgent_keywords']
-    features_df = pd.DataFrame([features], columns=feature_columns)
-    # Escalar las características
-    features_scaled = scaler.transform(features_df)
-    # Predecir
-    prediction = model.predict(features_scaled)[0]
-    result = "Phishing" if prediction == 1 else "Legítimo"
+    prompt = (
+        "Eres un detector de phishing. Analiza el siguiente texto y responde solo con 'Phishing' o 'Legítimo':\n\n"
+        f"{input_text}\n\n"
+        "Respuesta:"
+    )
+    response = client.models.generate_content(
+        model='gemini-2.5-flash-preview-04-17',
+        contents=prompt
+    )
+    result = response.text.strip()
     return render_template('index.html', prediction=result)
 
 if __name__ == '__main__':
