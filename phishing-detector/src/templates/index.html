@@ -1,31 +1,115 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detector de Phishing</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Detector de Phishing Multimodal</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; margin: 20px; }
+        .container { max-width: 700px; margin: auto; background: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #333; }
+        form { margin-bottom: 20px; }
+        textarea, input[type="file"] { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #5cb85c; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #4cae4c; }
+        .result { margin-top: 20px; padding: 15px; border-left: 4px solid #333; background-color: #eee; }
+        .result strong { display: block; margin-bottom: 5px; }
+        .phishing { border-left-color: #d9534f; background-color: #f2dede; color: #a94442; }
+        .legitimo { border-left-color: #5cb85c; background-color: #dff0d8; color: #3c763d; }
+        .desconocido, .error { border-left-color: #f0ad4e; background-color: #fcf8e3; color: #8a6d3b; }
+         ul { margin-top: 5px; padding-left: 20px; }
+         li { margin-bottom: 5px; }
+         label { display: block; margin-bottom: 5px; font-weight: bold; }
+         /* Optional: Styles to hide file inputs initially and use a button */
+         input[type="file"] { display: none; }
+         .custom-file-upload {
+            border: 1px solid #ccc;
+            display: inline-block;
+            padding: 6px 12px;
+            cursor: pointer;
+            background-color: #fff;
+            border-radius: 4px;
+            margin-bottom: 10px;
+         }
+         .custom-file-upload:hover {
+             background-color: #f0f0f0;
+         }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Detector de Phishing</h1>
-        <form action="/predict" method="post">
-            <label for="text">Ingresa el asunto del correo o la URL:</label><br>
-            <textarea name="text" id="text" placeholder="Escribe aquí..."></textarea><br><br>
-            <button type="submit">Clasificar</button>
+        <h1>Detector de Phishing Multimodal</h1>
+        <p>Introduce texto, sube una imagen (captura de pantalla) o un archivo de audio para detecta posible phishing.</p>
+
+        <form id="phishingForm" method="post" action="/predict" enctype="multipart/form-data">
+            <h2>Introduce tu entrada</h2>
+
+            <div>
+                <label for="text">Texto (Email, SMS, etc.):</label>
+                <textarea id="text" name="text" rows="6" placeholder="Pega aquí el texto del email o mensaje..."></textarea>
+            </div>
+
+            <div>
+                <label for="image">O sube una imagen (Captura de pantalla):</label>
+                 <label for="image" class="custom-file-upload">Seleccionar Imagen</label>
+                <input type="file" id="image" name="image" accept="image/*">
+                <span id="imageFileName"></span>
+            </div>
+
+            <div>
+                <label for="audio">O sube un archivo de audio (Grabación de voz):</label>
+                 <label for="audio" class="custom-file-upload">Seleccionar Audio</label>
+                <input type="file" id="audio" name="audio" accept="audio/*">
+                 <span id="audioFileName"></span>
+                 <small>Formatos soportados: WAV, MP3 (requiere configuración de Google Cloud Speech-to-Text).</small>
+            </div>
+
+
+            <button type="submit">Analizar</button>
         </form>
+
         {% if prediction %}
-            <h2>Resultado: 
-                <span class="result">
-                    {{ prediction }}
-                    {% if prediction == "Phishing" %}
-                        <span style="color: #ff9800; font-size: 1.2em;">&#9888;</span>
-                    {% elif prediction == "Legítimo" %}
-                        <span style="color: #4CAF50; font-size: 1.2em;">&#10004;</span>
-                    {% endif %}
-                </span>
-            </h2>
+            <div class="result {% if prediction == 'Phishing' %}phishing{% elif prediction == 'Legítimo' %}legitimo{% else %}desconocido{% endif %}">
+                <strong>Resultado ({{ input_type | default('Desconocido') | capitalize }}):</strong> {{ prediction }}
+                {% if reasons %}
+                    <strong>Razones:</strong>
+                    <ul>
+                        {% for reason in reasons %}
+                            <li>{{ reason }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
         {% endif %}
     </div>
+
+    <script>
+        // Display selected file names
+        document.getElementById('image').addEventListener('change', function() {
+            const fileName = this.files[0] ? this.files[0].name : '';
+            document.getElementById('imageFileName').textContent = fileName;
+        });
+         document.getElementById('audio').addEventListener('change', function() {
+            const fileName = this.files[0] ? this.files[0].name : '';
+            document.getElementById('audioFileName').textContent = fileName;
+        });
+
+        // Optional: Prevent submitting if multiple inputs are filled (server handles this too)
+        document.getElementById('phishingForm').addEventListener('submit', function(event) {
+            const text = document.getElementById('text').value.trim();
+            const imageFile = document.getElementById('image').files.length;
+            const audioFile = document.getElementById('audio').files.length;
+
+            if (!text && !imageFile && !audioFile) {
+                alert("Por favor, introduce texto, sube una imagen o un archivo de audio.");
+                event.preventDefault(); // Stop form submission
+            } else if ((text && imageFile) || (text && audioFile) || (imageFile && audioFile)) {
+                 alert("Por favor, proporciona solo una forma de entrada a la vez (texto, imagen o audio).");
+                 event.preventDefault(); // Stop form submission
+            }
+             // Optionally disable the submit button to prevent double clicks
+             // event.target.querySelector('button[type="submit"]').disabled = true;
+        });
+    </script>
 </body>
 </html>
